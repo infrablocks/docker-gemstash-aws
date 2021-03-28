@@ -13,3 +13,9 @@ services:
 
   metadata:
     image: amazon/amazon-ec2-metadata-mock:v1.2.0
+
+  db:
+    image: postgres/postgres:13.2
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password

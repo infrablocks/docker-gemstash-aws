@@ -262,6 +262,93 @@ describe 'entrypoint' do
     end
   end
 
+  describe 'with server configuration' do
+    before(:all) do
+      create_env_file(
+        endpoint_url: s3_endpoint_url,
+        region: s3_bucket_region,
+        bucket_path: s3_bucket_path,
+        object_path: s3_env_file_object_path,
+        env: {
+          'GEMSTASH_BIND' => 'tcp://0.0.0.0:4242'
+        })
+
+      execute_docker_entrypoint(
+        started_indicator: "Listening")
+    end
+
+    after(:all, &:reset_docker_backend)
+
+    it 'uses the provided bind configuration' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:bind: "tcp:\/\/0\.0\.0\.0:4242"/))
+    end
+  end
+
+  describe 'with fetch configuration' do
+    before(:all) do
+      create_env_file(
+        endpoint_url: s3_endpoint_url,
+        region: s3_bucket_region,
+        bucket_path: s3_bucket_path,
+        object_path: s3_env_file_object_path,
+        env: {
+          'GEMSTASH_PROTECTED_FETCH_ENABLED' => 'yes',
+          'GEMSTASH_FETCH_TIMEOUT' => '30'
+        })
+
+      execute_docker_entrypoint(
+        started_indicator: "Listening")
+    end
+
+    after(:all, &:reset_docker_backend)
+
+    it 'enables protected fetch when requested' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:protected_fetch: true/))
+    end
+
+    it 'uses the provided fetch timeout' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:fetch_timeout: 30/))
+    end
+  end
+
+  describe 'with database configuration' do
+    before(:all) do
+      create_env_file(
+        endpoint_url: s3_endpoint_url,
+        region: s3_bucket_region,
+        bucket_path: s3_bucket_path,
+        object_path: s3_env_file_object_path,
+        env: {
+          'GEMSTASH_DB_ADAPTER' => 'postgres',
+          'GEMSTASH_DB_URL' => 'postgres://user:password@db/admin',
+          'GEMSTASH_DB_CONNECTION_OPTIONS' => "{:connect_timeout: 60}"
+        })
+
+      execute_docker_entrypoint(
+        started_indicator: "Listening")
+    end
+
+    after(:all, &:reset_docker_backend)
+
+    it 'uses the provided database adapter' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:db_adapter: "postgres"/))
+    end
+
+    it 'uses the provided database URL' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:db_url: "postgres:\/\/user:password@db\/admin"/))
+    end
+
+    it 'uses the provided database connection options' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:db_connection_options: {:connect_timeout: 60}/))
+    end
+  end
+
   def reset_docker_backend
     Specinfra::Backend::Docker.instance.send :cleanup_container
     Specinfra::Backend::Docker.clear

@@ -76,9 +76,28 @@ else
 fi
 
 if [ -n "${GEMSTASH_FETCH_TIMEOUT}" ]; then
-  echo ":fetch_timeout: \"${GEMSTASH_FETCH_TIMEOUT}\"" >> "${config_file}"
+  echo ":fetch_timeout: ${GEMSTASH_FETCH_TIMEOUT}" >> "${config_file}"
 else
   echo ":fetch_timeout: 20" >> "${config_file}"
+fi
+
+if [[ "$GEMSTASH_PROTECTED_FETCH_ENABLED" = "yes" ]]; then
+  echo ":protected_fetch: true" >> "${config_file}"
+fi
+
+if [ -n "${GEMSTASH_DB_ADAPTER}" ]; then
+  option=":db_adapter: \"${GEMSTASH_DB_ADAPTER}\""
+  echo "${option}" >> "${config_file}"
+fi
+
+if [ -n "${GEMSTASH_DB_URL}" ]; then
+  option=":db_url: \"${GEMSTASH_DB_URL}\""
+  echo "${option}" >> "${config_file}"
+fi
+
+if [ -n "${GEMSTASH_DB_CONNECTION_OPTIONS}" ]; then
+  option=":db_connection_options: ${GEMSTASH_DB_CONNECTION_OPTIONS}"
+  echo "${option}" >> "${config_file}"
 fi
 
 echo "Running gemstash."
