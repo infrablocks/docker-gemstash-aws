@@ -4,6 +4,7 @@ describe 'entrypoint' do
   metadata_service_url = 'http://metadata:1338'
   s3_endpoint_url = 'http://s3:4566'
   s3_bucket_region = 'us-east-1'
+  s3_bucket_name = 'bucket'
   s3_bucket_path = 's3://bucket'
   s3_env_file_object_path = 's3://bucket/env-file.env'
 
@@ -56,6 +57,208 @@ describe 'entrypoint' do
     it 'runs with the gemstash group' do
       expect(process('\{gemstash\} puma ').group)
         .to(eq('gemstash'))
+    end
+
+    it 'uses the local storage adapter' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:storage_adapter: "local"/))
+    end
+
+    it 'uses a base path of /var/opt/gemstash' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:base_path: "\/var\/opt\/gemstash"/))
+    end
+
+    it 'does not include an s3 path option' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .not_to(match(/:s3_path:/))
+    end
+
+    it 'does not include an AWS access key option' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .not_to(match(/:aws_access_key:/))
+    end
+
+    it 'does not include an AWS secret access key option' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .not_to(match(/:aws_secret_access_key:/))
+    end
+
+    it 'does not include a bucket name option' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .not_to(match(/:bucket_name:/))
+    end
+
+    it 'does not include a region option' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .not_to(match(/:region:/))
+    end
+
+    it 'uses the memory cache type' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:cache_type: "memory"/))
+    end
+
+    it 'uses a max size of 500 for the cache' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:cache_max_size: 500/))
+    end
+
+    it 'uses an expiration of 30 minutes for the cache' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:cache_expiration: 1800/))
+    end
+
+    it 'binds on all addresses on port 9292' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:bind: "tcp:\/\/0\.0\.0\.0:9292"/))
+    end
+
+    it 'does not include the protected fetch option' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .not_to(match(/:protected_fetch:/))
+    end
+
+    it 'uses a fetch timeout of 20 seconds' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:fetch_timeout: 20/))
+    end
+  end
+
+  describe 'with local storage adapter configuration' do
+    before(:all) do
+      create_env_file(
+        endpoint_url: s3_endpoint_url,
+        region: s3_bucket_region,
+        bucket_path: s3_bucket_path,
+        object_path: s3_env_file_object_path,
+        env: {
+          'GEMSTASH_BASE_PATH' => '/data'
+        })
+
+      execute_command("mkdir /data")
+      execute_command("chown gemstash:gemstash /data")
+
+      execute_docker_entrypoint(
+        started_indicator: "Listening")
+    end
+
+    after(:all, &:reset_docker_backend)
+
+    it 'uses the provided base path' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:base_path: "\/data"/))
+    end
+  end
+
+  describe 'with s3 storage adapter configuration' do
+    before(:all) do
+      create_env_file(
+        endpoint_url: s3_endpoint_url,
+        region: s3_bucket_region,
+        bucket_path: s3_bucket_path,
+        object_path: s3_env_file_object_path,
+        env: {
+          'GEMSTASH_STORAGE_ADAPTER' => 's3',
+          'GEMSTASH_S3_PATH' => 'artifacts',
+          'GEMSTASH_AWS_ACCESS_KEY' => '...',
+          'GEMSTASH_AWS_SECRET_ACCESS_KEY' => '...',
+          'GEMSTASH_BUCKET_NAME' => s3_bucket_name,
+          'GEMSTASH_REGION' => s3_bucket_region
+        })
+
+      execute_docker_entrypoint(
+        started_indicator: "Listening")
+    end
+
+    after(:all, &:reset_docker_backend)
+
+    it 'uses the s3 storage adapter' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:storage_adapter: "s3"/))
+    end
+
+    it 'uses the provided s3 path' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:s3_path: "artifacts"/))
+    end
+
+    it 'uses the provided AWS access key' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:aws_access_key: "..."/))
+    end
+
+    it 'uses the provided AWS secret access key' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:aws_secret_access_key: "..."/))
+    end
+
+    it 'uses the provided bucket name' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:bucket_name: "#{s3_bucket_name}"/))
+    end
+
+    it 'uses the provided region' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:region: "#{s3_bucket_region}"/))
+    end
+  end
+
+  describe 'with general cache configuration' do
+    before(:all) do
+      create_env_file(
+        endpoint_url: s3_endpoint_url,
+        region: s3_bucket_region,
+        bucket_path: s3_bucket_path,
+        object_path: s3_env_file_object_path,
+        env: {
+          'GEMSTASH_CACHE_MAX_SIZE' => '1000',
+          'GEMSTASH_CACHE_EXPIRATION' => '3600'
+        })
+
+      execute_docker_entrypoint(
+        started_indicator: "Listening")
+    end
+
+    after(:all, &:reset_docker_backend)
+
+    it 'uses the provided max cache size' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:cache_max_size: 1000/))
+    end
+
+    it 'uses the provided cache expiration' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:cache_expiration: 3600/))
+    end
+  end
+
+  describe 'with memcached cache configuration' do
+    before(:all) do
+      create_env_file(
+        endpoint_url: s3_endpoint_url,
+        region: s3_bucket_region,
+        bucket_path: s3_bucket_path,
+        object_path: s3_env_file_object_path,
+        env: {
+          'GEMSTASH_CACHE_TYPE' => 'memcached',
+          'GEMSTASH_MEMCACHED_SERVERS' => 'c1.local:11211,c2.local:11211'
+        })
+
+      execute_docker_entrypoint(
+        started_indicator: "Listening")
+    end
+
+    after(:all, &:reset_docker_backend)
+
+    it 'uses the memcached cache type' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:cache_type: "memcached"/))
+    end
+
+    it 'uses the provided memcached servers' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:memcached_servers: "c1.local:11211,c2.local:11211"/))
     end
   end
 
