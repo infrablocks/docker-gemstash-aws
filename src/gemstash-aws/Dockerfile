@@ -10,7 +10,13 @@ RUN addgroup -S gemstash && \
 
 RUN apk update
 
-# Add dependencies required to build Ruby
+RUN apk \
+    --verbose \
+    --no-cache \
+    add \
+        su-exec
+
+# Add dependencies required to build Ruby gems
 RUN apk \
     --verbose \
     --no-cache \
@@ -43,20 +49,22 @@ RUN apk \
         zlib-dev
 
 # Add dependencies required to run Gemstash
-RUN apk
+RUN apk \
     --verbose \
     --no-cache \
     --virtual .ruby-rundeps \
     add \
-        curl \
+        libressl \
         ruby \
+        ruby-bigdecimal \
         ruby-dev \
-        sqlite-dev \
+        ruby-etc \
         ruby-io-console \
         ruby-json \
+        sqlite-dev
 
 # Install Gemstash
-RUN gem install --no-ri --no-rdoc gemstash -v ${GEMSTASH_VERSION}
+RUN gem install --no-document gemstash -v ${GEMSTASH_VERSION}
 
 # Remove dependencies required to build Ruby
 RUN apk del .ruby-builddeps

@@ -15,8 +15,8 @@ describe 'commands' do
   after(:all, &:reset_docker_backend)
 
   it "includes the gemstash command" do
-    expect(command('/opt/gemstash/bin/gemstash --version').stderr)
-        .to(match(/0.15.0/))
+    expect(command('gemstash --version').stdout)
+        .to(match(/2\.1\.0/))
   end
 
   def reset_docker_backend
