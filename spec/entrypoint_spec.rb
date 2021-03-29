@@ -114,6 +114,16 @@ describe 'entrypoint' do
         .to(match(/:bind: "tcp:\/\/0\.0\.0\.0:9292"/))
     end
 
+    it 'does not include a puma threads option' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .not_to(match(/:puma_threads:/))
+    end
+
+    it 'does not include a puma workers option' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .not_to(match(/:puma_workers:/))
+    end
+
     it 'does not include the protected fetch option' do
       expect(file('/opt/gemstash/conf/gemstash.yml').content)
         .not_to(match(/:protected_fetch:/))
@@ -270,7 +280,9 @@ describe 'entrypoint' do
         bucket_path: s3_bucket_path,
         object_path: s3_env_file_object_path,
         env: {
-          'GEMSTASH_BIND' => 'tcp://0.0.0.0:4242'
+          'GEMSTASH_BIND' => 'tcp://0.0.0.0:4242',
+          'GEMSTASH_PUMA_THREADS' => "32",
+          'GEMSTASH_PUMA_WORKERS' => "2"
         })
 
       execute_docker_entrypoint(
@@ -282,6 +294,16 @@ describe 'entrypoint' do
     it 'uses the provided bind configuration' do
       expect(file('/opt/gemstash/conf/gemstash.yml').content)
         .to(match(/:bind: "tcp:\/\/0\.0\.0\.0:4242"/))
+    end
+
+    it 'uses the provided puma threads configuration' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:puma_threads: 32/))
+    end
+
+    it 'uses the provided puma workers configuration' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:puma_workers: 2/))
     end
   end
 
@@ -323,8 +345,8 @@ describe 'entrypoint' do
         object_path: s3_env_file_object_path,
         env: {
           'GEMSTASH_DB_ADAPTER' => 'postgres',
-          'GEMSTASH_DB_URL' => 'postgres://user:password@db/admin',
-          'GEMSTASH_DB_CONNECTION_OPTIONS' => "{:connect_timeout: 60}"
+          'GEMSTASH_DB_URL' => 'postgres://user:password@db/user',
+          'GEMSTASH_DB_CONNECTION_OPTIONS' => "{connect_timeout: 60}"
         })
 
       execute_docker_entrypoint(
@@ -340,12 +362,12 @@ describe 'entrypoint' do
 
     it 'uses the provided database URL' do
       expect(file('/opt/gemstash/conf/gemstash.yml').content)
-        .to(match(/:db_url: "postgres:\/\/user:password@db\/admin"/))
+        .to(match(/:db_url: "postgres:\/\/user:password@db\/user"/))
     end
 
     it 'uses the provided database connection options' do
       expect(file('/opt/gemstash/conf/gemstash.yml').content)
-        .to(match(/:db_connection_options: {:connect_timeout: 60}/))
+        .to(match(/:db_connection_options: {connect_timeout: 60}/))
     end
   end
 

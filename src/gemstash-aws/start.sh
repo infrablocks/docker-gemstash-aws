@@ -75,6 +75,16 @@ else
   echo ":bind: \"tcp://0.0.0.0:9292\"" >> "${config_file}"
 fi
 
+if [ -n "${GEMSTASH_PUMA_THREADS}" ]; then
+  option=":puma_threads: ${GEMSTASH_PUMA_THREADS}"
+  echo "${option}" >> "${config_file}"
+fi
+
+if [ -n "${GEMSTASH_PUMA_WORKERS}" ]; then
+  option=":puma_workers: ${GEMSTASH_PUMA_WORKERS}"
+  echo "${option}" >> "${config_file}"
+fi
+
 if [ -n "${GEMSTASH_FETCH_TIMEOUT}" ]; then
   echo ":fetch_timeout: ${GEMSTASH_FETCH_TIMEOUT}" >> "${config_file}"
 else
@@ -99,6 +109,8 @@ if [ -n "${GEMSTASH_DB_CONNECTION_OPTIONS}" ]; then
   option=":db_connection_options: ${GEMSTASH_DB_CONNECTION_OPTIONS}"
   echo "${option}" >> "${config_file}"
 fi
+
+cat "${config_file}"
 
 echo "Running gemstash."
 exec su-exec gemstash:gemstash /usr/bin/gemstash start \
