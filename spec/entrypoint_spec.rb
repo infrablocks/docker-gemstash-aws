@@ -133,6 +133,16 @@ describe 'entrypoint' do
       expect(file('/opt/gemstash/conf/gemstash.yml').content)
         .to(match(/:fetch_timeout: 20/))
     end
+
+    it 'does not include the ignore gemfile source option' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .not_to(match(/:ignore_gemfile_source:/))
+    end
+
+    it 'does not include a rubygems URL' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .not_to(match(/:rubygems_url:/))
+    end
   end
 
   describe 'with local storage adapter configuration' do
@@ -368,6 +378,35 @@ describe 'entrypoint' do
     it 'uses the provided database connection options' do
       expect(file('/opt/gemstash/conf/gemstash.yml').content)
         .to(match(/:db_connection_options: {connect_timeout: 60}/))
+    end
+  end
+
+  describe 'with miscellaneous configuration' do
+    before(:all) do
+      create_env_file(
+        endpoint_url: s3_endpoint_url,
+        region: s3_bucket_region,
+        bucket_path: s3_bucket_path,
+        object_path: s3_env_file_object_path,
+        env: {
+          'GEMSTASH_IGNORE_GEMFILE_SOURCE' => 'yes',
+          'GEMSTASH_RUBYGEMS_URL' => 'https://gems.example.com'
+        })
+
+      execute_docker_entrypoint(
+        started_indicator: "Listening")
+    end
+
+    after(:all, &:reset_docker_backend)
+
+    it 'ignores gemfile source' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:ignore_gemfile_source: true/))
+    end
+
+    it 'uses the provided rubygems URL' do
+      expect(file('/opt/gemstash/conf/gemstash.yml').content)
+        .to(match(/:rubygems_url: "https:\/\/gems\.example\.com"/))
     end
   end
 

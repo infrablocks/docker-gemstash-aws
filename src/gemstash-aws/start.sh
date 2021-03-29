@@ -110,7 +110,14 @@ if [ -n "${GEMSTASH_DB_CONNECTION_OPTIONS}" ]; then
   echo "${option}" >> "${config_file}"
 fi
 
-cat "${config_file}"
+if [[ "$GEMSTASH_IGNORE_GEMFILE_SOURCE" = "yes" ]]; then
+  echo ":ignore_gemfile_source: true" >> "${config_file}"
+fi
+
+if [ -n "${GEMSTASH_RUBYGEMS_URL}" ]; then
+  option=":rubygems_url: \"${GEMSTASH_RUBYGEMS_URL}\""
+  echo "${option}" >> "${config_file}"
+fi
 
 echo "Running gemstash."
 exec su-exec gemstash:gemstash /usr/bin/gemstash start \
