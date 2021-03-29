@@ -15,8 +15,4 @@ git crypt unlock
 
 ./go version:bump[rc]
 
-./go images:base:publish
-./go images:sidecar:publish
-./go images:query:publish
-./go images:store:publish
-./go images:compact:publish
+./go image:publish
