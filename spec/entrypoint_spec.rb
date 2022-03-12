@@ -46,16 +46,16 @@ describe 'entrypoint' do
     after(:all, &:reset_docker_backend)
 
     it 'runs gemstash' do
-      expect(process('\{gemstash\} puma ')).to(be_running)
+      expect(process('\{gemstash\}')).to(be_running)
     end
 
     it 'runs with the gemstash user' do
-      expect(process('\{gemstash\} puma ').user)
+      expect(process('\{gemstash\}').user)
         .to(eq('gemstash'))
     end
 
     it 'runs with the gemstash group' do
-      expect(process('\{gemstash\} puma ').group)
+      expect(process('\{gemstash\}').group)
         .to(eq('gemstash'))
     end
 
@@ -459,7 +459,7 @@ describe 'entrypoint' do
       "docker-entrypoint.sh #{args} > #{logfile_path} 2>&1 &")
 
     begin
-      Octopoller.poll(timeout: 5) do
+      Octopoller.poll(timeout: 10) do
         docker_entrypoint_log = command("cat #{logfile_path}").stdout
         docker_entrypoint_log =~ /#{opts[:started_indicator]}/ ?
           docker_entrypoint_log :
