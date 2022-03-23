@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'commands' do
   image = 'gemstash-aws:latest'
   extra = {
-      'Entrypoint' => '/bin/sh',
+    'Entrypoint' => '/bin/sh'
   }
 
   before(:all) do
@@ -14,9 +16,9 @@ describe 'commands' do
 
   after(:all, &:reset_docker_backend)
 
-  it "includes the gemstash command" do
+  it 'includes the gemstash command' do
     expect(command('gemstash --version').stdout)
-        .to(match(/2\.1\.0/))
+      .to(match(/2\.1\.0/))
   end
 
   def reset_docker_backend

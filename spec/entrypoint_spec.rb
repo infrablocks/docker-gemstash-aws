@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe 'entrypoint' do
@@ -10,8 +12,8 @@ describe 'entrypoint' do
 
   environment = {
     'AWS_METADATA_SERVICE_URL' => metadata_service_url,
-    'AWS_ACCESS_KEY_ID' => "...",
-    'AWS_SECRET_ACCESS_KEY' => "...",
+    'AWS_ACCESS_KEY_ID' => '...',
+    'AWS_SECRET_ACCESS_KEY' => '...',
     'AWS_S3_ENDPOINT_URL' => s3_endpoint_url,
     'AWS_S3_BUCKET_REGION' => s3_bucket_region,
     'AWS_S3_ENV_FILE_OBJECT_PATH' => s3_env_file_object_path
@@ -37,10 +39,12 @@ describe 'entrypoint' do
         endpoint_url: s3_endpoint_url,
         region: s3_bucket_region,
         bucket_path: s3_bucket_path,
-        object_path: s3_env_file_object_path)
+        object_path: s3_env_file_object_path
+      )
 
       execute_docker_entrypoint(
-        started_indicator: "Listening")
+        started_indicator: 'Listening'
+      )
     end
 
     after(:all, &:reset_docker_backend)
@@ -66,7 +70,7 @@ describe 'entrypoint' do
 
     it 'uses a base path of /var/opt/gemstash' do
       expect(file('/opt/gemstash/conf/gemstash.yml').content)
-        .to(match(/:base_path: "\/var\/opt\/gemstash"/))
+        .to(match(%r{:base_path: "/var/opt/gemstash"}))
     end
 
     it 'does not include an s3 path option' do
@@ -111,7 +115,7 @@ describe 'entrypoint' do
 
     it 'binds on all addresses on port 9292' do
       expect(file('/opt/gemstash/conf/gemstash.yml').content)
-        .to(match(/:bind: "tcp:\/\/0\.0\.0\.0:9292"/))
+        .to(match(%r{:bind: "tcp://0\.0\.0\.0:9292"}))
     end
 
     it 'does not include a puma threads option' do
@@ -154,20 +158,22 @@ describe 'entrypoint' do
         object_path: s3_env_file_object_path,
         env: {
           'GEMSTASH_BASE_PATH' => '/data'
-        })
+        }
+      )
 
-      execute_command("mkdir /data")
-      execute_command("chown gemstash:gemstash /data")
+      execute_command('mkdir /data')
+      execute_command('chown gemstash:gemstash /data')
 
       execute_docker_entrypoint(
-        started_indicator: "Listening")
+        started_indicator: 'Listening'
+      )
     end
 
     after(:all, &:reset_docker_backend)
 
     it 'uses the provided base path' do
       expect(file('/opt/gemstash/conf/gemstash.yml').content)
-        .to(match(/:base_path: "\/data"/))
+        .to(match(%r{:base_path: "/data"}))
     end
   end
 
@@ -185,10 +191,12 @@ describe 'entrypoint' do
           'GEMSTASH_AWS_SECRET_ACCESS_KEY' => '...',
           'GEMSTASH_BUCKET_NAME' => s3_bucket_name,
           'GEMSTASH_REGION' => s3_bucket_region
-        })
+        }
+      )
 
       execute_docker_entrypoint(
-        started_indicator: "Listening")
+        started_indicator: 'Listening'
+      )
     end
 
     after(:all, &:reset_docker_backend)
@@ -234,10 +242,12 @@ describe 'entrypoint' do
         env: {
           'GEMSTASH_CACHE_MAX_SIZE' => '1000',
           'GEMSTASH_CACHE_EXPIRATION' => '3600'
-        })
+        }
+      )
 
       execute_docker_entrypoint(
-        started_indicator: "Listening")
+        started_indicator: 'Listening'
+      )
     end
 
     after(:all, &:reset_docker_backend)
@@ -263,10 +273,12 @@ describe 'entrypoint' do
         env: {
           'GEMSTASH_CACHE_TYPE' => 'memcached',
           'GEMSTASH_MEMCACHED_SERVERS' => 'c1.local:11211,c2.local:11211'
-        })
+        }
+      )
 
       execute_docker_entrypoint(
-        started_indicator: "Listening")
+        started_indicator: 'Listening'
+      )
     end
 
     after(:all, &:reset_docker_backend)
@@ -291,19 +303,21 @@ describe 'entrypoint' do
         object_path: s3_env_file_object_path,
         env: {
           'GEMSTASH_BIND' => 'tcp://0.0.0.0:4242',
-          'GEMSTASH_PUMA_THREADS' => "32",
-          'GEMSTASH_PUMA_WORKERS' => "2"
-        })
+          'GEMSTASH_PUMA_THREADS' => '32',
+          'GEMSTASH_PUMA_WORKERS' => '2'
+        }
+      )
 
       execute_docker_entrypoint(
-        started_indicator: "Listening")
+        started_indicator: 'Listening'
+      )
     end
 
     after(:all, &:reset_docker_backend)
 
     it 'uses the provided bind configuration' do
       expect(file('/opt/gemstash/conf/gemstash.yml').content)
-        .to(match(/:bind: "tcp:\/\/0\.0\.0\.0:4242"/))
+        .to(match(%r{:bind: "tcp://0\.0\.0\.0:4242"}))
     end
 
     it 'uses the provided puma threads configuration' do
@@ -327,10 +341,12 @@ describe 'entrypoint' do
         env: {
           'GEMSTASH_PROTECTED_FETCH_ENABLED' => 'yes',
           'GEMSTASH_FETCH_TIMEOUT' => '30'
-        })
+        }
+      )
 
       execute_docker_entrypoint(
-        started_indicator: "Listening")
+        started_indicator: 'Listening'
+      )
     end
 
     after(:all, &:reset_docker_backend)
@@ -356,11 +372,13 @@ describe 'entrypoint' do
         env: {
           'GEMSTASH_DB_ADAPTER' => 'postgres',
           'GEMSTASH_DB_URL' => 'postgres://user:password@db/user',
-          'GEMSTASH_DB_CONNECTION_OPTIONS' => "{connect_timeout: 60}"
-        })
+          'GEMSTASH_DB_CONNECTION_OPTIONS' => '{connect_timeout: 60}'
+        }
+      )
 
       execute_docker_entrypoint(
-        started_indicator: "Listening")
+        started_indicator: 'Listening'
+      )
     end
 
     after(:all, &:reset_docker_backend)
@@ -372,7 +390,7 @@ describe 'entrypoint' do
 
     it 'uses the provided database URL' do
       expect(file('/opt/gemstash/conf/gemstash.yml').content)
-        .to(match(/:db_url: "postgres:\/\/user:password@db\/user"/))
+        .to(match(%r{:db_url: "postgres://user:password@db/user"}))
     end
 
     it 'uses the provided database connection options' do
@@ -391,10 +409,12 @@ describe 'entrypoint' do
         env: {
           'GEMSTASH_IGNORE_GEMFILE_SOURCE' => 'yes',
           'GEMSTASH_RUBYGEMS_URL' => 'https://gems.example.com'
-        })
+        }
+      )
 
       execute_docker_entrypoint(
-        started_indicator: "Listening")
+        started_indicator: 'Listening'
+      )
     end
 
     after(:all, &:reset_docker_backend)
@@ -406,7 +426,7 @@ describe 'entrypoint' do
 
     it 'uses the provided rubygems URL' do
       expect(file('/opt/gemstash/conf/gemstash.yml').content)
-        .to(match(/:rubygems_url: "https:\/\/gems\.example\.com"/))
+        .to(match(%r{:rubygems_url: "https://gems\.example\.com"}))
     end
   end
 
@@ -417,57 +437,65 @@ describe 'entrypoint' do
 
   def create_env_file(opts)
     create_object(opts
-                    .merge(content: (opts[:env] || {})
-                      .to_a
-                      .collect { |item| " #{item[0]}=\"#{item[1]}\"" }
-                      .join("\n")))
+        .merge(content: (opts[:env] || {})
+            .to_a
+            .collect { |item| " #{item[0]}=\"#{item[1]}\"" }
+            .join("\n")))
   end
 
   def execute_command(command_string)
     command = command(command_string)
     exit_status = command.exit_status
     unless exit_status == 0
-      raise RuntimeError,
-            "\"#{command_string}\" failed with exit code: #{exit_status}"
+      raise "\"#{command_string}\" failed with exit code: #{exit_status}"
     end
+
     command
   end
 
+  def make_bucket(opts)
+    execute_command('aws ' \
+                    "--endpoint-url #{opts[:endpoint_url]} " \
+                    's3 ' \
+                    'mb ' \
+                    "#{opts[:bucket_path]} " \
+                    "--region \"#{opts[:region]}\"")
+  end
+
+  def copy_object(opts)
+    execute_command("echo -n #{Shellwords.escape(opts[:content])} | " \
+                    'aws ' \
+                    "--endpoint-url #{opts[:endpoint_url]} " \
+                    's3 ' \
+                    'cp ' \
+                    '- ' \
+                    "#{opts[:object_path]} " \
+                    "--region \"#{opts[:region]}\" " \
+                    '--sse AES256')
+  end
+
   def create_object(opts)
-    execute_command('aws ' +
-                      "--endpoint-url #{opts[:endpoint_url]} " +
-                      's3 ' +
-                      'mb ' +
-                      "#{opts[:bucket_path]} " +
-                      "--region \"#{opts[:region]}\"")
-    execute_command("echo -n #{Shellwords.escape(opts[:content])} | " +
-                      'aws ' +
-                      "--endpoint-url #{opts[:endpoint_url]} " +
-                      's3 ' +
-                      'cp ' +
-                      '- ' +
-                      "#{opts[:object_path]} " +
-                      "--region \"#{opts[:region]}\" " +
-                      '--sse AES256')
+    make_bucket(opts)
+    copy_object(opts)
+  end
+
+  def wait_for_contents(file, content)
+    Octopoller.poll(timeout: 30) do
+      docker_entrypoint_log = command("cat #{file}").stdout
+      docker_entrypoint_log =~ /#{content}/ ? docker_entrypoint_log : :re_poll
+    end
+  rescue Octopoller::TimeoutError => e
+    puts command("cat #{file}").stdout
+    raise e
   end
 
   def execute_docker_entrypoint(opts)
-    logfile_path = '/tmp/docker-entrypoint.log'
     args = (opts[:arguments] || []).join(' ')
+    logfile_path = '/tmp/docker-entrypoint.log'
+    start_command = "docker-entrypoint.sh #{args} > #{logfile_path} 2>&1 &"
+    started_indicator = opts[:started_indicator]
 
-    execute_command(
-      "docker-entrypoint.sh #{args} > #{logfile_path} 2>&1 &")
-
-    begin
-      Octopoller.poll(timeout: 10) do
-        docker_entrypoint_log = command("cat #{logfile_path}").stdout
-        docker_entrypoint_log =~ /#{opts[:started_indicator]}/ ?
-          docker_entrypoint_log :
-          :re_poll
-      end
-    rescue Octopoller::TimeoutError => e
-      puts command("cat #{logfile_path}").stdout
-      raise e
-    end
+    execute_command(start_command)
+    wait_for_contents(logfile_path, started_indicator)
   end
 end
