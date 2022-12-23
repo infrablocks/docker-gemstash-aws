@@ -127,9 +127,9 @@ namespace :image do
   ) do |t|
     t.work_directory = 'build/images'
 
-    t.copy_spec = [
-      'src/gemstash-aws/Dockerfile',
-      'src/gemstash-aws/start.sh'
+    t.copy_spec = %w[
+      src/gemstash-aws/Dockerfile
+      src/gemstash-aws/start.sh
     ]
 
     t.repository_name = 'gemstash-aws'
@@ -192,7 +192,7 @@ namespace :test do
     task check: [:rubocop]
 
     desc 'Attempt to automatically fix issues with the test code'
-    task fix: [:'rubocop:auto_correct']
+    task fix: [:'rubocop:autocorrect_all']
   end
 
   RSpec::Core::RakeTask.new(
