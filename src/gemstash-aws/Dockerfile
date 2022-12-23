@@ -38,8 +38,8 @@ RUN apk \
         linux-headers \
         make \
         ncurses-dev \
-        libressl \
-        libressl-dev \
+        openssl \
+        openssl-dev \
         procps \
         readline-dev \
         ruby \
@@ -54,7 +54,7 @@ RUN apk \
     --no-cache \
     --virtual .ruby-rundeps \
     add \
-        libressl \
+        openssl \
         ruby \
         ruby-bigdecimal \
         ruby-dev \
