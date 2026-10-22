@@ -20,7 +20,7 @@ describe 'entrypoint' do
   }
   image = 'gemstash-aws:latest'
   extra = {
-    'Entrypoint' => '/bin/sh',
+    'Entrypoint' => ['/bin/sh'],
     'HostConfig' => {
       'NetworkMode' => 'docker_gemstash_aws_test_default'
     }
